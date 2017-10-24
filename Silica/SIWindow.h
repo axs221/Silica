@@ -42,6 +42,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable SIWindow *)focusedWindow;
 
 /**
+ * Returns the parent of the window.
+ *
+ *  @return A SIWindow object representing the parent window or nil if the window has no parent.
+ */
+- (nullable SIWindow *)parentWindow;
+
+/**
  *  Takes the window's screen and returns all other windows on the same screen.
  *
  *  @return An array of SIWindow objects representing all other windows on the same screen.

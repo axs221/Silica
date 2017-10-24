@@ -70,6 +70,15 @@
     return nil;
 }
 
+- (SIWindow *)parentWindow {
+    SIAccessibilityElement *parent = [self elementForKey:kAXParentAttribute];
+    if (parent) {
+        return [[SIWindow alloc] initWithAXElement:parent.axElementRef];
+    }
+
+    return nil;
+}
+
 - (NSArray *)otherWindowsOnSameScreen {
     return [[SIWindow visibleWindows] filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(SIWindow *win, NSDictionary *bindings) {
         return ![self isEqual:win] && [[self screen] isEqual: [win screen]];
