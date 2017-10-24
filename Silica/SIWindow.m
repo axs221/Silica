@@ -21,13 +21,13 @@
 
 + (NSArray *)allWindows {
     if (![SIUniversalAccessHelper isAccessibilityTrusted]) return nil;
-    
+
     NSMutableArray *windows = [NSMutableArray array];
-    
+
     for (SIApplication *application in [SIApplication runningApplications]) {
         [windows addObjectsFromArray:[application windows]];
     }
-    
+
     return windows;
 }
 
@@ -66,7 +66,7 @@
             return window;
         }
     }
-    
+
     return nil;
 }
 
@@ -111,10 +111,10 @@
         if (error != kAXErrorSuccess) {
             return NO;
         }
-        
+
         self._windowID = windowID;
     }
-    
+
     return self._windowID;
 }
 
@@ -156,7 +156,7 @@
     if (!self.isActive) {
         return NO;
     }
-    
+
     CFArrayRef windowDescriptions = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
     BOOL isActive = NO;
     for (NSDictionary *dictionary in (__bridge NSArray *)windowDescriptions) {
@@ -166,9 +166,9 @@
             break;
         }
     }
-    
+
     CFRelease(windowDescriptions);
-    
+
     return isActive;
 }
 
@@ -184,21 +184,21 @@
 
 - (NSScreen *)screen {
     CGRect windowFrame = [self frame];
-    
+
     CGFloat lastVolume = 0;
     NSScreen *lastScreen = nil;
-    
+
     for (NSScreen *screen in [NSScreen screens]) {
         CGRect screenFrame = [screen frameIncludingDockAndMenu];
         CGRect intersection = CGRectIntersection(windowFrame, screenFrame);
         CGFloat volume = intersection.size.width * intersection.size.height;
-        
+
         if (volume > lastVolume) {
             lastVolume = volume;
             lastScreen = screen;
         }
     }
-    
+
     return lastScreen;
 }
 
@@ -210,10 +210,10 @@
 
 - (void)moveToSpace:(NSUInteger)space {
     if (space > 16) return;
-    
+
     CGKeyCode keyCode = 0xFF;
     NSString *keyCodeString = [NSString stringWithFormat:@"%@", @(space)];
-    
+
     if (keyCodeString.length > 0) {
         switch ([keyCodeString characterAtIndex:keyCodeString.length - 1]) {
             case '1':
@@ -249,13 +249,13 @@
                 break;
         }
     }
-    
+
     CGEventRef keyboardEvent = CGEventCreateKeyboardEvent(NULL, keyCode, true);
-    
+
     CGEventSetFlags(keyboardEvent, kCGEventFlagMaskControl);
-    
+
     [self moveToSpaceWithEvent:[NSEvent eventWithCGEvent:keyboardEvent]];
-    
+
     CFRelease(keyboardEvent);
 }
 
@@ -275,7 +275,7 @@
     CGEventRef mouseDownEvent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, mouseCursorPoint, kCGMouseButtonLeft);
     CGEventRef mouseUpEvent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseUp, mouseCursorPoint, kCGMouseButtonLeft);
     CGEventRef mouseRestoreEvent = CGEventCreateMouseEvent(NULL, kCGEventMouseMoved, startingCursorPoint, kCGMouseButtonLeft);
-    
+
     CGEventRef keyboardEventUp = CGEventCreateKeyboardEvent(NULL, event.keyCode, false);
 
     CGEventSetFlags(mouseMoveEvent, 0);
@@ -361,36 +361,36 @@ NSPoint SIMidpoint(NSRect r) {
                 shouldDisregardFn:(BOOL(^)(double deltaX, double deltaY))shouldDisregardFn {
     SIWindow *thisWindow = [SIWindow focusedWindow];
     NSPoint startingPoint = SIMidpoint([thisWindow frame]);
-    
+
     NSArray *otherWindows = [thisWindow otherWindowsOnAllScreens];
     NSMutableArray *closestOtherWindows = [NSMutableArray arrayWithCapacity:[otherWindows count]];
-    
+
     for (SIWindow *win in otherWindows) {
         NSPoint otherPoint = SIMidpoint([win frame]);
-        
+
         double deltaX = otherPoint.x - startingPoint.x;
         double deltaY = otherPoint.y - startingPoint.y;
-        
+
         if (shouldDisregardFn(deltaX, deltaY))
             continue;
-        
+
         double angle = atan2(deltaY, deltaX);
         double distance = hypot(deltaX, deltaY);
-        
+
         double angleDifference = whichDirectionFn(angle);
-        
+
         double score = distance / cos(angleDifference / 2.0);
-        
+
         [closestOtherWindows addObject:@{
          @"score": @(score),
          @"win": win,
          }];
     }
-    
+
     NSArray *sortedOtherWindows = [closestOtherWindows sortedArrayUsingComparator:^NSComparisonResult(NSDictionary* pair1, NSDictionary* pair2) {
         return [[pair1 objectForKey:@"score"] compare:[pair2 objectForKey:@"score"]];
     }];
-    
+
     return sortedOtherWindows;
 }
 
